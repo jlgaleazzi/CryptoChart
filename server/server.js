@@ -23,8 +23,18 @@ app.get('/currentprice', (req,res) => {
 app.get('/historical', (req,res) => {
     // get historical prices from coindesk
     var params = req.query;
-    axios.get(`${coindesk}historical/close.json`, params)
+
+    console.log(JSON.stringify(params));
+   
+    axios.get(`${coindesk}historical/close.json`, {
+        params: {
+        index:params.index,
+        start:params.start,
+        end:params.end
+        }
+    })
     .then((result) => {
+        console.log(result.data);
         res.send(result.data)
     })
     .catch((err) => {
