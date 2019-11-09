@@ -34,7 +34,7 @@ app.get('/historical', (req,res) => {
         }
     })
     .then((result) => {
-        console.log(result.data);
+       
         res.send(result.data)
     })
     .catch((err) => {

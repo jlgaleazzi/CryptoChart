@@ -7,25 +7,28 @@ class BChart extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            start: this.getDate(),
+            start: moment().subtract(1,'week').format('YYYY-MM-DD'),
             chartData:{},
-            end: this.getDate(),
-            selectedButton:'' 
+            end: moment().format('YYYY-MM-DD'),
+            selectedButton:'btn_1',
+            chart:null 
         }
         this.rangeButtonClicked = this.rangeButtonClicked.bind(this);
     }
     componentDidMount() {
-       let params = {
-            index:'USD',
-            start:'2016-11-01',
-            end: "2019-11-08",
-        };
-
-      this.getDataFromAPI(params);
+         console.log('componentDidMount')
+        this.getDataFromAPI();
 
     }
 
-    getDataFromAPI(params){
+    getDataFromAPI(){
+
+        let params = {
+            index:'USD',
+            start:this.state.start,
+            end: this.state.end,
+        };
+
         axios.get('http://127.0.0.1:3002/historical', {
             params: params
         })
@@ -50,39 +53,76 @@ class BChart extends React.Component {
             data.push({t:date.valueOf(),y:bpi[key]})
 
         }
-        console.log(JSON.stringify(bpi));
         this.setState({chartData:data});
-        this.drawChart(this.state.chartData)
+        if (this.state.chart === null) {
+            this.drawChart(this.state.chartData);
+        } else {
+            this.state.chart.destroy();
+            this.drawChart(this.state.chartData);
+        }
+        
     }
     
-    getDate() {
-        return "2019-11-01"
-    }
+   
     
     rangeButtonClicked(event) {
        
         let btn = event.target.id;
+        this.setState({
+            selectedButton:btn
+        })
         switch (btn) {
             case 'btn_1':
+                // one week range
+                this.setState({
+                  start: moment().subtract(1,'week').format('YYYY-MM-DD')
+                })
                 break;
             case 'btn_2':
+                // one month range
+                this.setState({
+                    start: moment().subtract(1,'month').format('YYYY-MM-DD')
+                  })
                 break;
             case 'btn_3':
+                // three months range
+                this.setState({
+                    start: moment().subtract(3,'month').format('YYYY-MM-DD')
+                  })
                  break;
             case 'btn_4':
+                // six months range
+                this.setState({
+                    start: moment().subtract(6,'month').format('YYYY-MM-DD')
+                  })
                  break;
             case 'btn_5':
+                // year to date range
+                this.setState({
+                    start: moment().startOf('year').format('YYYY-MM-DD')
+                  })
                  break;
             case 'btn_6':
+                // one year range
+                this.setState({
+                    start: moment().subtract(1,'year').format('YYYY-MM-DD')
+                  })
                  break;
-
+            case 'btn_7':
+                // two years range
+                this.setState({
+                    start: moment().subtract(2,'year').format('YYYY-MM-DD')
+                  })
+                  break;
         }
+        this.getDataFromAPI();
     }
     
 
     drawChart(chartData) {
         let canvas = this.refs.canvas;
         let ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         let myChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -104,7 +144,7 @@ class BChart extends React.Component {
                     display:false,
                 },
                 animation: {
-                    duration:1
+                    duration:0
                 },
                 scales: {
                     xAxes: [{
@@ -185,6 +225,7 @@ class BChart extends React.Component {
 
             }
         })
+       this.setState({chart:myChart});
     }
 
     render() {
